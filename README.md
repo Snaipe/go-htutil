@@ -13,3 +13,4 @@ This package provides the following utilities:
 * an alternate implemenation of github.com/golang/gddo/httputil.NegotiateContentType.
   This package was in part motivated in providing a no-dependency package providing
   similar functionality.
+* a wrapper over `net/url.URL` that implements `encoding.TextMarshaler` and `encoding.TextUnmarshaler`.
