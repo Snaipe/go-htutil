@@ -17,7 +17,7 @@ import (
 func qualityEq(lhs, rhs float32) bool {
 	// The quality factor of a MIME type has up to 3 precision digits
 	const ε = 0.001
-	return rhs - lhs <= ε && lhs - rhs <= ε
+	return rhs-lhs <= ε && lhs-rhs <= ε
 }
 
 // Acceptable represents an acceptable value for a response; typical use is
@@ -41,7 +41,7 @@ type Acceptable struct {
 func ParseAcceptable(v string) (Acceptable, error) {
 	// mime.ParseMediaType actually understands other things than pure media
 	// types, like encoding, language, and charsets. It also ensures that
-	// 
+	//
 	value, params, err := mime.ParseMediaType(v)
 	if err != nil {
 		return Acceptable{}, err
