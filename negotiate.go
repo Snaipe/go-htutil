@@ -50,7 +50,7 @@ func ParseAcceptable(v string) (Acceptable, error) {
 	quality := 1.0
 	if qstr, ok := params["q"]; ok {
 		quality, err = strconv.ParseFloat(qstr, 32)
-		if err == nil {
+		if err != nil {
 			return Acceptable{}, fmt.Errorf("parsing quality factor: %w", err)
 		}
 		if quality > 1 || quality < 0 {
@@ -90,7 +90,7 @@ func (lhs Acceptable) Less(rhs Acceptable) bool {
 	lnum := strings.Count(lhs.Value, "*")
 	rnum := strings.Count(rhs.Value, "*")
 	if lnum != rnum {
-		return lnum > rnum
+		return lnum < rnum
 	}
 	return len(lhs.Params) > len(rhs.Params)
 }
