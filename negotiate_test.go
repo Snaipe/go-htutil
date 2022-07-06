@@ -55,8 +55,6 @@ func TestSortAcceptables(t *testing.T) {
 
 	for i, tcase := range tcases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			t.Parallel()
-
 			sort.Slice(tcase.In, func(i, j int) bool { return Acceptable.Less(tcase.In[i], tcase.In[j]) })
 			if !reflect.DeepEqual(tcase.In, tcase.Out) {
 				t.Fatalf("expected %v, got %v", tcase.Out, tcase.In)
@@ -92,7 +90,6 @@ func TestNegotiateContent(t *testing.T) {
 
 	for i, tcase := range tcases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			t.Parallel()
 			hdr := http.Header{}
 			hdr.Set("Accept", tcase.Accept)
 
