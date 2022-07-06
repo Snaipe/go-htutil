@@ -30,6 +30,8 @@ type Acceptable struct {
 	Value string
 
 	// The quality, between 0 and 1, of the accepted value.
+	// 0 is special and means "not acceptable" per RFC 9110.
+	// Default quality is 1.
 	Quality float32
 
 	// Params contains any extra optional parameters for this value.
@@ -166,13 +168,32 @@ func NegotiateContent(hdr http.Header, key string, offers ...string) (string, *A
 			values = []string{"*"}
 		}
 	}
+	var identityOffered, identityRefused bool
+	for _, offer := range offers {
+		if offer == "identity" {
+			identityOffered = true
+			break
+		}
+	}
 	for _, acc := range ParseAccept(values...) {
+		if acc.Quality == 0 {
+			if acc.Value == "identity" {
+				identityRefused = true
+			}
+			continue
+		}
 		for _, offer := range offers {
 			if !dumbglob(acc.Value, offer) {
 				continue
 			}
 			return offer, &acc
 		}
+	}
+	if key == "Accept-Encoding" && identityOffered && !identityRefused {
+		// Clients always implicitly accept "identity", unless
+		// they explicity refuse it with "identity;q=0".  So if
+		// we're offering it, then it's accepted.
+		return "identity", nil
 	}
 	return "", nil
 }

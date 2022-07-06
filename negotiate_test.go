@@ -67,23 +67,60 @@ func TestNegotiateContent(t *testing.T) {
 	t.Parallel()
 
 	tcases := []struct {
+		Header string
 		Accept string
 		Offers []string
 		Expect string
 	}{
 		{
+			Header: "Accept",
 			Accept: "text/plain; q=0.1, application/json",
 			Offers: []string{"text/plain", "application/json"},
 			Expect: "application/json",
 		},
 		{
+			Header: "Accept",
 			Accept: "text/plain; q=0.1, application/json",
 			Offers: []string{"text/plain"},
 			Expect: "text/plain",
 		},
 		{
+			Header: "Accept",
 			Accept: "text/plain; q=0.1, application/json",
 			Offers: []string{},
+			Expect: "",
+		},
+		{
+			Header: "Accept-Encoding",
+			Accept: "gzip",
+			Offers: []string{"identity", "gzip"},
+			Expect: "gzip",
+		},
+		{
+			Header: "Accept-Encoding",
+			Accept: "<none>", // omit the "Accept-Encoding" header.
+			Offers: []string{"identity"},
+			Expect: "identity",
+		},
+		{
+			Header: "Accept-Encoding",
+			Accept: "", // empty "Accept-Encoding: " header
+			Offers: []string{"identity"},
+			Expect: "identity",
+		},
+		// "As long as the identity;q=0 or *;q=0 directives do not explicitly forbid the
+		// identity value that means no encoding, the server must never return a 406 Not
+		// Acceptable error."
+		{
+			Header: "Accept-Encoding",
+			Accept: "gzip",
+			Offers: []string{"identity"},
+			Expect: "identity",
+		},
+		{
+			Header: "Accept-Encoding",
+			Accept: "gzip, identity; q=0",
+			Offers: []string{"identity"},
 			Expect: "",
 		},
 	}
@@ -91,9 +128,11 @@ func TestNegotiateContent(t *testing.T) {
 	for i, tcase := range tcases {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			hdr := http.Header{}
-			hdr.Set("Accept", tcase.Accept)
+			if tcase.Accept != "<none>" {
+				hdr.Set(tcase.Header, tcase.Accept)
+			}
 
-			actual, _ := NegotiateContent(hdr, "Accept", tcase.Offers...)
+			actual, _ := NegotiateContent(hdr, tcase.Header, tcase.Offers...)
 			if actual != tcase.Expect {
 				t.Fatalf("expected %v, got %v", tcase.Expect, actual)
 			}
